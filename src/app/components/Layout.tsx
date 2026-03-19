@@ -1,5 +1,5 @@
 import { Link, Outlet, useLocation } from 'react-router';
-import { Package, Plus, RefreshCw, LayoutGrid } from 'lucide-react';
+import { Package, Plus, RefreshCw, LayoutGrid , LogIn , User} from 'lucide-react';
 
 /**
  * SHARED LAYOUT COMPONENT
@@ -12,7 +12,9 @@ export function Layout() {
     { path: '/', label: 'Dashboard', icon: LayoutGrid },
     { path: '/add-product', label: 'Add Product', icon: Plus },
     { path: '/update-stock', label: 'Update Stock', icon: RefreshCw },
-    { path: '/stock-view', label: 'Stock View', icon: Package }
+    { path: '/stock-view', label: 'Stock View', icon: Package },
+    { path: '/login', label: 'Login', icon: LogIn },
+    { path: '/profile', label: 'Profile', icon: User }
   ];
 
   const isActive = (path: string) => location.pathname === path;
