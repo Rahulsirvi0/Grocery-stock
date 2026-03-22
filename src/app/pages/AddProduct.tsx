@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { useNavigate } from 'react-router';
+import { useNavigate } from 'react-router-dom';
 import { Plus, DollarSign, Package, CheckCircle } from 'lucide-react';
 import { addProduct } from '../utils/storage';
 

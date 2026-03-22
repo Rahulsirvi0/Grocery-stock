@@ -1,12 +1,15 @@
 import { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { LogIn } from "lucide-react";
 
 export function Login() {
 
+  const navigate = useNavigate();
+
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
 
-  const handleLogin = (e:any) => {
+  const handleLogin = (e: React.FormEvent) => {
     e.preventDefault();
 
     const user = {
@@ -16,7 +19,7 @@ export function Login() {
 
     localStorage.setItem("loggedUser", JSON.stringify(user));
 
-    window.location.href = "/profile";
+    navigate("/profile");
   };
 
   return (
@@ -24,7 +27,6 @@ export function Login() {
 
       <div className="w-full max-w-md backdrop-blur-md bg-white/10 border border-white/20 rounded-2xl shadow-2xl p-8">
 
-        {/* Title */}
         <div className="text-center mb-8">
           <LogIn className="w-12 h-12 text-white mx-auto mb-3" />
           <h2 className="text-4xl font-bold text-white mb-2">Login</h2>
@@ -36,6 +38,7 @@ export function Login() {
           <input
             type="email"
             placeholder="Email Address"
+            required
             className="w-full px-4 py-3 rounded-xl bg-white/10 border border-white/20 text-white placeholder-white/50 focus:outline-none focus:border-blue-400"
             value={email}
             onChange={(e)=>setEmail(e.target.value)}
@@ -44,6 +47,7 @@ export function Login() {
           <input
             type="password"
             placeholder="Password"
+            required
             className="w-full px-4 py-3 rounded-xl bg-white/10 border border-white/20 text-white placeholder-white/50 focus:outline-none focus:border-blue-400"
             value={password}
             onChange={(e)=>setPassword(e.target.value)}
@@ -59,16 +63,6 @@ export function Login() {
 
         </form>
       </div>
-
-      <style>{`
-        @keyframes slideUp {
-          from { opacity:0; transform: translateY(30px); }
-          to { opacity:1; transform: translateY(0); }
-        }
-        .animate-slide-up {
-          animation: slideUp 0.6s ease-out;
-        }
-      `}</style>
 
     </div>
   );
