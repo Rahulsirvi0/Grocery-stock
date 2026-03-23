@@ -1,14 +1,22 @@
 import { useState, useEffect } from 'react';
 import { Package, DollarSign, Trash2 } from 'lucide-react';
-import { getProducts, deleteProduct, Product } from '../utils/storage';
+import { supabase } from '../utils/supabase';
 
 /**
  * STOCK VIEW PAGE
  * Display all products in a modern animated table with status colors
  */
+
+type Product = {
+  id: number
+  name: string
+  quantity: number
+  price: number
+}
+
 export function StockView() {
   const [products, setProducts] = useState<Product[]>([]);
-  const [sortField, setSortField] = useState<'name' | 'quantity' | 'status'>('name');
+  const [sortField, setSortField] = useState<'name' | 'quantity' >('name');
   const [sortDirection, setSortDirection] = useState<'asc' | 'desc'>('asc');
 
   // Load products on mount
@@ -28,18 +36,35 @@ export function StockView() {
     };
   }, []);
 
-  const loadProducts = () => {
-    const allProducts = getProducts();
-    setProducts(allProducts);
+  const loadProducts = async () => {
+      const { data, error } = await supabase
+      .from("products")
+      .select("*")
+
+    if (error) {
+      console.error("Error loading products:", error.message)
+      return
+    }
+
+    setProducts(data || [])
   };
 
   // Handle product deletion
-  const handleDelete = (productId: string) => {
-    if (window.confirm('Are you sure you want to delete this product?')) {
-      deleteProduct(productId);
-      loadProducts();
+  const handleDelete = async (productId: number) => {
+    if (!window.confirm("Are you sure you want to delete this product?")) return
+
+    const { error } = await supabase
+      .from("products")
+      .delete()
+      .eq("id", productId)
+
+    if (error) {
+      alert("Delete failed: " + error.message)
+      return
     }
-  };
+
+    loadProducts()
+  }
 
   // Sort products
   const sortedProducts = [...products].sort((a, b) => {
@@ -55,10 +80,7 @@ export function StockView() {
         aValue = a.quantity;
         bValue = b.quantity;
         break;
-      case 'status':
-        aValue = a.status;
-        bValue = b.status;
-        break;
+      
       default:
         aValue = a.name.toLowerCase();
         bValue = b.name.toLowerCase();
@@ -70,7 +92,7 @@ export function StockView() {
   });
 
   // Toggle sort
-  const handleSort = (field: 'name' | 'quantity' | 'status') => {
+  const handleSort = (field: 'name' | 'quantity' ) => {
     if (sortField === field) {
       setSortDirection(sortDirection === 'asc' ? 'desc' : 'asc');
     } else {
@@ -160,17 +182,7 @@ export function StockView() {
                     <th className="px-6 py-4 text-left text-white font-bold text-lg">
                       Price
                     </th>
-                    <th 
-                      onClick={() => handleSort('status')}
-                      className="px-6 py-4 text-left text-white font-bold text-lg cursor-pointer hover:bg-white/10 transition-colors"
-                    >
-                      <div className="flex items-center gap-2">
-                        Status
-                        {sortField === 'status' && (
-                          <span>{sortDirection === 'asc' ? '↑' : '↓'}</span>
-                        )}
-                      </div>
-                    </th>
+                  
                     <th className="px-6 py-4 text-center text-white font-bold text-lg">
                       Actions
                     </th>
@@ -200,12 +212,7 @@ export function StockView() {
                           {product.price.toFixed(2)}
                         </div>
                       </td>
-                      <td className="px-6 py-4">
-                        <span className={`inline-flex items-center gap-2 px-4 py-2 rounded-lg font-bold border ${getStatusStyle(product.status)}`}>
-                          <span>{getStatusIcon(product.status)}</span>
-                          {product.status}
-                        </span>
-                      </td>
+                      
                       <td className="px-6 py-4 text-center">
                         <button
                           onClick={() => handleDelete(product.id)}
@@ -248,10 +255,7 @@ export function StockView() {
                       <p className="text-white/60 text-sm mb-1">Quantity</p>
                       <p className="text-white font-bold text-2xl">{product.quantity}</p>
                     </div>
-                    <span className={`inline-flex items-center gap-2 px-4 py-2 rounded-lg font-bold border ${getStatusStyle(product.status)}`}>
-                      <span>{getStatusIcon(product.status)}</span>
-                      {product.status}
-                    </span>
+                    
                   </div>
                   <button
                     onClick={() => handleDelete(product.id)}

@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { Package, TrendingUp, AlertTriangle, XCircle } from 'lucide-react';
-import { getStatistics, initializeSampleData } from '../utils/storage';
+import { getStatistics, initializeSampleData } from '../utils/supabase';
 import { StatCard } from '../components/StatCard';
 
 /**
@@ -8,6 +8,7 @@ import { StatCard } from '../components/StatCard';
  * Displays real-time statistics with animated cards
  */
 export function Dashboard() {
+
   const [stats, setStats] = useState({
     totalProducts: 0,
     availableItems: 0,
@@ -15,28 +16,26 @@ export function Dashboard() {
     outOfStockItems: 0
   });
 
-  // Load statistics on mount and refresh
-  const loadStats = () => {
-    const statistics = getStatistics();
+  const loadStats = async () => {
+    const statistics = await getStatistics();
     setStats(statistics);
   };
 
   useEffect(() => {
-    // Initialize sample data if empty
+
     initializeSampleData();
     loadStats();
 
-    // Refresh stats when window gains focus (handles updates from other tabs)
     const handleFocus = () => loadStats();
     window.addEventListener('focus', handleFocus);
-    
-    // Also poll for changes every 2 seconds
-    const interval = setInterval(loadStats, 2000);
+
+    const interval = setInterval(loadStats, 5000);
 
     return () => {
       window.removeEventListener('focus', handleFocus);
       clearInterval(interval);
     };
+
   }, []);
 
   return (

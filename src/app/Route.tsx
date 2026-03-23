@@ -8,9 +8,7 @@ import { StockView } from "./pages/StockView";
 import { Login } from "./pages/Login";
 import { Profile } from "./pages/Profile";
 
-const isLoggedIn = () => {
-  return localStorage.getItem("loggedUser");
-};
+const isLoggedIn = () => !!localStorage.getItem("loggedUser");
 
 export const router = createBrowserRouter([
   {
@@ -57,9 +55,11 @@ export const router = createBrowserRouter([
       },
       {
         path: "profile",
-        element: isLoggedIn()
-          ? <Navigate to="/profile" />
-          : <Login/>
+        element: (
+          <PrivateRoute>
+            <Profile />
+          </PrivateRoute>
+        )
       },
       {
         path: "login",

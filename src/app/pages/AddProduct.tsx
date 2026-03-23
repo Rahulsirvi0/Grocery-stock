@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Plus, DollarSign, Package, CheckCircle } from 'lucide-react';
-import { addProduct } from '../utils/storage';
+import { supabase } from '../utils/supabase';
 
 /**
  * ADD PRODUCT PAGE
@@ -46,7 +46,7 @@ export function AddProduct() {
   };
 
   // Handle form submission
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
     if (!validateForm()) return;
@@ -54,8 +54,21 @@ export function AddProduct() {
     // Add product to storage
     const quantity = parseInt(formData.quantity);
     const price = parseFloat(formData.price);
-    addProduct(formData.name, quantity, price);
 
+    const { data, error } = await supabase
+      .from("products")
+      .insert([
+        {
+          name: formData.name,
+          quantity: quantity,
+          price: price
+        }
+      ]);
+
+    if (error) {
+      alert("Error adding product: " + error.message);
+      return;
+    }
     // Show success animation
     setShowSuccess(true);
     

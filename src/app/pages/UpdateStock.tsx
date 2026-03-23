@@ -1,14 +1,23 @@
 import { useState, useEffect } from 'react';
 import { RefreshCw, Plus, Minus, CheckCircle } from 'lucide-react';
-import { getProducts, updateProductQuantity, Product } from '../utils/storage';
+import { supabase } from '../utils/supabase';
 
 /**
  * UPDATE STOCK PAGE
  * Interface to update product quantities with real-time status updates
  */
+
+type Product = {
+  id: number
+  name: string
+  quantity: number
+  price: number
+  status?: string
+}
+
 export function UpdateStock() {
   const [products, setProducts] = useState<Product[]>([]);
-  const [selectedProductId, setSelectedProductId] = useState<string>('');
+  const [selectedProductId, setSelectedProductId] = useState<number | null>(null);
   const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
   const [quantityChange, setQuantityChange] = useState<string>('');
   const [showSuccess, setShowSuccess] = useState(false);
@@ -18,15 +27,28 @@ export function UpdateStock() {
     loadProducts();
   }, []);
 
-  const loadProducts = () => {
-    const allProducts = getProducts();
-    setProducts(allProducts);
-  };
+
+
+  const loadProducts = async () => {
+    const { data, error } = await supabase
+      .from("products")
+      .select("*")
+
+    if (error) {
+      console.error("Error loading products:", error.message)
+      return
+    }
+
+    setProducts(data || [])
+  }
 
   // Update selected product details when selection changes
   useEffect(() => {
     if (selectedProductId) {
       const product = products.find(p => p.id === selectedProductId);
+      if (product) {
+        product.status = product.quantity === 0 ? 'Out of Stock' : product.quantity < 10 ? 'Low Stock' : 'Available';
+      }
       setSelectedProduct(product || null);
       setQuantityChange('');
     } else {
@@ -63,17 +85,25 @@ export function UpdateStock() {
   const updateQuantity = (newQuantity: number) => {
     if (!selectedProduct) return;
     
-    const updated = updateProductQuantity(selectedProduct.id, newQuantity);
-    if (updated) {
-      // Refresh products list
-      loadProducts();
-      
-      // Show success message
-      setShowSuccess(true);
-      setTimeout(() => setShowSuccess(false), 2000);
-    }
-  };
+    const updateQuantity = async (newQuantity: number) => {
+      if (!selectedProduct) return
 
+      const { error } = await supabase
+        .from("products")
+        .update({ quantity: newQuantity })
+        .eq("id", selectedProduct.id)
+
+      if (error) {
+        alert("Update failed: " + error.message)
+        return
+      }
+
+      loadProducts()
+
+      setShowSuccess(true)
+      setTimeout(() => setShowSuccess(false), 2000)
+    }
+  }
   // Get status color classes
   const getStatusColor = (status: string) => {
     switch (status) {
@@ -117,8 +147,8 @@ export function UpdateStock() {
           </label>
           <select
             id="product-select"
-            value={selectedProductId}
-            onChange={(e) => setSelectedProductId(e.target.value)}
+            value={selectedProductId ?? ''}
+            onChange={(e) => setSelectedProductId(e.target.value ? parseInt(e.target.value) : null)}
             className="w-full px-5 py-4 bg-white/10 border border-white/30 rounded-xl text-white focus:outline-none focus:ring-4 focus:ring-purple-500/50 focus:border-purple-400 transition-all duration-300 text-lg cursor-pointer"
           >
             <option value="" className="bg-purple-900 text-white">-- Choose a Product --</option>
@@ -147,7 +177,7 @@ export function UpdateStock() {
                 </div>
                 <div>
                   <p className="text-white/60 text-sm mb-1">Status</p>
-                  <span className={`inline-flex items-center px-4 py-2 rounded-lg font-bold border ${getStatusColor(selectedProduct.status)}`}>
+                  <span className={`inline-flex items-center px-4 py-2 rounded-lg font-bold border ${getStatusColor(selectedProduct.status || 'Available')}`}>
                     {selectedProduct.status}
                   </span>
                 </div>
