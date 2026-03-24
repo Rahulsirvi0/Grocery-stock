@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { Package, TrendingUp, AlertTriangle, XCircle } from 'lucide-react';
 import { getStatistics, initializeSampleData } from '../utils/supabase';
 import { StatCard } from '../components/StatCard';
+import { SalesChart } from "../components/saleschart";
 
 /**
  * DASHBOARD PAGE
@@ -80,6 +81,9 @@ export function Dashboard() {
           color="red"
           delay={300}
         />
+      </div>
+     <div className="mt-10">
+        <SalesChart />
       </div>
 
       {/* Quick Insights */}

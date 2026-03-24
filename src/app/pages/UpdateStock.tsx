@@ -82,28 +82,31 @@ export function UpdateStock() {
   };
 
   // Update quantity in storage and refresh UI
-  const updateQuantity = (newQuantity: number) => {
+  const updateQuantity = async (newQuantity: number) => {
     if (!selectedProduct) return;
-    
-    const updateQuantity = async (newQuantity: number) => {
-      if (!selectedProduct) return
 
-      const { error } = await supabase
-        .from("products")
-        .update({ quantity: newQuantity })
-        .eq("id", selectedProduct.id)
+    const difference = selectedProduct.quantity - newQuantity;
+    const { error } = await supabase
+      .from("products")
+      .update({ quantity: newQuantity })
+      .eq("id", selectedProduct.id);
 
-      if (error) {
-        alert("Update failed: " + error.message)
-        return
+    if (!error) {
+
+      // if quantity decreased → record sale
+      if (difference > 0) {
+        await supabase.from("sales").insert({
+          product_name: selectedProduct.name,
+          quantity: difference
+        });
       }
 
-      loadProducts()
+      loadProducts();
 
-      setShowSuccess(true)
-      setTimeout(() => setShowSuccess(false), 2000)
+      setShowSuccess(true);
+      setTimeout(() => setShowSuccess(false), 2000);
     }
-  }
+  };
   // Get status color classes
   const getStatusColor = (status: string) => {
     switch (status) {
