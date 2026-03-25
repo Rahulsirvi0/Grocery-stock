@@ -59,6 +59,7 @@ export function Dashboard() {
           icon={Package}
           color="purple"
           delay={0}
+          
         />
         <StatCard
           title="Available Items"

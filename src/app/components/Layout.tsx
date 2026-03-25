@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { Link, Outlet, useLocation } from 'react-router-dom';
-import { Package, Plus, RefreshCw, LayoutGrid , LogIn , User} from 'lucide-react';
+import { Package, Plus, RefreshCw, LayoutGrid , LogIn , User , Receipt} from 'lucide-react';
 
 /**
  * SHARED LAYOUT COMPONENT
@@ -14,7 +14,7 @@ export function Layout() {
     { path: '/add-product', label: 'Add Product', icon: Plus },
     { path: '/update-stock', label: 'Update Stock', icon: RefreshCw },
     { path: '/stock-view', label: 'Stock View', icon: Package },
-    //{ path: '/login', label: 'Login', icon: LogIn },
+    { path: '/billing', label: 'Billing', icon: Receipt },
     { path: '/profile', label: 'Profile', icon: User }
   ];
 
@@ -48,7 +48,7 @@ export function Layout() {
         </header>
 
         {/* Navigation */}
-        <nav className="container mx-auto px-50 py-6">
+        <nav className="container mx-auto px-40 py-6">
           <div className="backdrop-blur-md bg-white/10 border border-white/20 rounded-2xl p-2 shadow-2xl">
             <div className="flex flex-wrap gap-2">
               {navItems.map((item) => {

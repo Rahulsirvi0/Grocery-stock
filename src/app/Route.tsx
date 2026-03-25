@@ -7,10 +7,13 @@ import { UpdateStock } from "./pages/UpdateStock";
 import { StockView } from "./pages/StockView";
 import { Login } from "./pages/Login";
 import { Profile } from "./pages/Profile";
+import  Billing   from "./pages/Bill";
 
 const isLoggedIn = () => !!localStorage.getItem("loggedUser");
 
 export const router = createBrowserRouter([
+  
+  
   {
     path: "/",
     element: isLoggedIn()
@@ -21,6 +24,7 @@ export const router = createBrowserRouter([
     path: "/",
     element: <Layout />,
     children: [
+      
       {
         path: "dashboard",
         element: (
@@ -54,6 +58,14 @@ export const router = createBrowserRouter([
         )
       },
       {
+        path: "billing",
+        element: (
+          <PrivateRoute>
+            <Billing />
+          </PrivateRoute>
+        )
+      }, 
+      {
         path: "profile",
         element: (
           <PrivateRoute>
@@ -66,7 +78,10 @@ export const router = createBrowserRouter([
         element: isLoggedIn()
           ? <Navigate to="/dashboard" />
           : <Login />
-      }
+      },
+      
+      
+      
     ]
   }
 ]);
