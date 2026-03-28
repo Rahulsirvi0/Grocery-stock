@@ -6,25 +6,28 @@ import { AddProduct } from "./pages/AddProduct";
 import { UpdateStock } from "./pages/UpdateStock";
 import { StockView } from "./pages/StockView";
 import { Login } from "./pages/Login";
+import { Signup } from "./pages/Signup";
 import { Profile } from "./pages/Profile";
-import  Billing   from "./pages/Bill";
+import Billing from "./pages/Bill";
 
-const isLoggedIn = () => !!localStorage.getItem("loggedUser");
-
+// Remove the isLoggedIn function - let PrivateRoute handle it
 export const router = createBrowserRouter([
-  
-  
   {
     path: "/",
-    element: isLoggedIn()
-      ? <Navigate to="/dashboard" />
-      : <Navigate to="/login" />
+    element: <Navigate to="/dashboard" replace />
+  },
+  {
+    path: "/login",
+    element: <Login />
+  },
+  {
+    path: "/signup",
+    element: <Signup />
   },
   {
     path: "/",
     element: <Layout />,
     children: [
-      
       {
         path: "dashboard",
         element: (
@@ -72,16 +75,7 @@ export const router = createBrowserRouter([
             <Profile />
           </PrivateRoute>
         )
-      },
-      {
-        path: "login",
-        element: isLoggedIn()
-          ? <Navigate to="/dashboard" />
-          : <Login />
-      },
-      
-      
-      
+      }
     ]
   }
 ]);

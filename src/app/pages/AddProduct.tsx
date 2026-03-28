@@ -1,21 +1,40 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Plus, DollarSign, Package, CheckCircle } from 'lucide-react';
 import { supabase } from '../utils/supabase';
+import { CATEGORIES } from "../constants/categories";
 
-/**
- * ADD PRODUCT PAGE
- * Form to add new products to inventory
- */
 export function AddProduct() {
   const navigate = useNavigate();
+
+  // Form data state
   const [formData, setFormData] = useState({
     name: '',
     quantity: '',
-    price: ''
+    price: '',
+    category: ''
   });
+
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [showSuccess, setShowSuccess] = useState(false);
+  const [category, setCategory] = useState("");
+
+  // Categories state
+  const [categories, setCategories] = useState<any[]>([]);
+
+  // Load categories from Supabase
+  useEffect(() => {
+    const loadCategories = async () => {
+      const { data, error } = await supabase
+        .from("categories")
+        .select("*");
+
+      if (!error && data) {
+        setCategories(data);
+      }
+    };
+    loadCategories();
+  }, []);
 
   // Form validation
   const validateForm = () => {
@@ -41,6 +60,10 @@ export function AddProduct() {
       newErrors.price = 'Price must be a positive number';
     }
 
+    if (!formData.category.trim()) {
+      newErrors.category = 'Category is required';
+    }
+
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };
@@ -48,20 +71,19 @@ export function AddProduct() {
   // Handle form submission
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-
     if (!validateForm()) return;
 
-    // Add product to storage
     const quantity = parseInt(formData.quantity);
     const price = parseFloat(formData.price);
 
-    const { data, error } = await supabase
+    const { error } = await supabase
       .from("products")
       .insert([
         {
           name: formData.name,
           quantity: quantity,
-          price: price
+          price: price,
+          category: formData.category
         }
       ]);
 
@@ -69,30 +91,30 @@ export function AddProduct() {
       alert("Error adding product: " + error.message);
       return;
     }
-    // Show success animation
+
     setShowSuccess(true);
-    
-    // Reset form
-    setFormData({ name: '', quantity: '', price: '' });
+
+    setFormData({
+      name: '',
+      quantity: '',
+      price: '',
+      category: ''
+    });
+
     setErrors({});
 
-    // Hide success message and optionally navigate
-    setTimeout(() => {
-      setShowSuccess(false);
-    }, 3000);
+    setTimeout(() => setShowSuccess(false), 3000);
   };
 
   const handleChange = (field: string, value: string) => {
     setFormData(prev => ({ ...prev, [field]: value }));
-    // Clear error for this field when user starts typing
-    if (errors[field]) {
-      setErrors(prev => ({ ...prev, [field]: '' }));
-    }
+    if (errors[field]) setErrors(prev => ({ ...prev, [field]: '' }));
   };
 
   return (
     <div className="max-w-2xl mx-auto animate-slide-up">
-      {/* Page Title */}
+
+      {/* Page title */}
       <div className="text-center mb-8">
         <h2 className="text-5xl font-bold text-white mb-3 drop-shadow-lg">
           Add New Product
@@ -102,7 +124,7 @@ export function AddProduct() {
         </p>
       </div>
 
-      {/* Success Message */}
+      {/* Success message */}
       {showSuccess && (
         <div className="mb-6 backdrop-blur-md bg-green-500/20 border border-green-400/50 rounded-2xl p-6 shadow-2xl animate-bounce-in">
           <div className="flex items-center gap-3">
@@ -115,18 +137,17 @@ export function AddProduct() {
         </div>
       )}
 
-      {/* Form Card */}
+      {/* Form */}
       <div className="backdrop-blur-md bg-white/10 border border-white/20 rounded-2xl p-8 shadow-2xl">
         <form onSubmit={handleSubmit} className="space-y-6">
+
           {/* Product Name */}
           <div>
-            <label htmlFor="name" className="flex items-center gap-2 text-white font-semibold mb-2 text-lg">
-              <Package className="w-5 h-5" />
-              Product Name
+            <label className="flex items-center gap-2 text-white font-semibold mb-2 text-lg">
+              <Package className="w-5 h-5" /> Product Name
             </label>
             <input
               type="text"
-              id="name"
               value={formData.name}
               onChange={(e) => handleChange('name', e.target.value)}
               placeholder="e.g., Fresh Apples"
@@ -134,22 +155,16 @@ export function AddProduct() {
                 errors.name ? 'border-red-400' : 'border-white/30'
               } rounded-xl text-white placeholder-white/50 focus:outline-none focus:ring-4 focus:ring-purple-500/50 focus:border-purple-400 transition-all duration-300 text-lg`}
             />
-            {errors.name && (
-              <p className="mt-2 text-red-300 text-sm flex items-center gap-1">
-                <span className="text-lg">⚠</span> {errors.name}
-              </p>
-            )}
+            {errors.name && <p className="mt-2 text-red-300 text-sm">⚠ {errors.name}</p>}
           </div>
 
           {/* Quantity */}
           <div>
-            <label htmlFor="quantity" className="flex items-center gap-2 text-white font-semibold mb-2 text-lg">
-              <Package className="w-5 h-5" />
-              Quantity
+            <label className="flex items-center gap-2 text-white font-semibold mb-2 text-lg">
+              <Package className="w-5 h-5" /> Quantity
             </label>
             <input
               type="number"
-              id="quantity"
               value={formData.quantity}
               onChange={(e) => handleChange('quantity', e.target.value)}
               placeholder="e.g., 50"
@@ -158,22 +173,16 @@ export function AddProduct() {
                 errors.quantity ? 'border-red-400' : 'border-white/30'
               } rounded-xl text-white placeholder-white/50 focus:outline-none focus:ring-4 focus:ring-purple-500/50 focus:border-purple-400 transition-all duration-300 text-lg`}
             />
-            {errors.quantity && (
-              <p className="mt-2 text-red-300 text-sm flex items-center gap-1">
-                <span className="text-lg">⚠</span> {errors.quantity}
-              </p>
-            )}
+            {errors.quantity && <p className="mt-2 text-red-300 text-sm">⚠ {errors.quantity}</p>}
           </div>
 
           {/* Price */}
           <div>
-            <label htmlFor="price" className="flex items-center gap-2 text-white font-semibold mb-2 text-lg">
-              <DollarSign className="w-5 h-5" />
-              Price ($)
+            <label className="flex items-center gap-2 text-white font-semibold mb-2 text-lg">
+              <DollarSign className="w-5 h-5" /> Price
             </label>
             <input
               type="number"
-              id="price"
               value={formData.price}
               onChange={(e) => handleChange('price', e.target.value)}
               placeholder="e.g., 3.99"
@@ -183,41 +192,43 @@ export function AddProduct() {
                 errors.price ? 'border-red-400' : 'border-white/30'
               } rounded-xl text-white placeholder-white/50 focus:outline-none focus:ring-4 focus:ring-purple-500/50 focus:border-purple-400 transition-all duration-300 text-lg`}
             />
-            {errors.price && (
-              <p className="mt-2 text-red-300 text-sm flex items-center gap-1">
-                <span className="text-lg">⚠</span> {errors.price}
-              </p>
-            )}
+            {errors.price && <p className="mt-2 text-red-300 text-sm">⚠ {errors.price}</p>}
           </div>
 
-          {/* Submit Button */}
+          {/* Category Dropdown */}
+          <div>
+            <label className="flex items-center gap-2 text-white font-semibold mb-2 text-lg">
+              <Package className="w-5 h-5" /> Category
+            </label>
+            <select
+              value={formData.category}
+              onChange={(e) => handleChange('category', e.target.value)}
+              className={`w-full px-5 py-4 bg-white/10 border ${
+                errors.category ? 'border-red-400' : 'border-white/30'
+              } rounded-xl text-white placeholder-white/50 focus:outline-none focus:ring-4 focus:ring-purple-500/50 focus:border-purple-400 transition-all duration-300 text-lg`}
+                >
+              <option value="" >Select Category</option>
+              {CATEGORIES.map((cat) => (
+                <option key={cat} value={cat} className="bg-purple-900 text-white" >
+                  {cat}
+                </option>
+              ))}
+            </select>
+            {errors.category && <p className="mt-2 text-red-300 text-sm">⚠ {errors.category}</p>}
+          </div>
+
+          {/* Submit */}
           <button
             type="submit"
             className="w-full bg-gradient-to-r from-purple-500 to-blue-500 text-white font-bold py-4 px-6 rounded-xl shadow-lg hover:shadow-2xl hover:scale-105 active:scale-95 transition-all duration-300 flex items-center justify-center gap-3 text-lg"
           >
-            <Plus className="w-6 h-6" />
-            Add Product to Inventory
+            <Plus className="w-6 h-6" /> Add Product to Inventory
           </button>
+
         </form>
       </div>
-
-      <style>{`
-        @keyframes slideUp {
-          from { opacity: 0; transform: translateY(30px); }
-          to { opacity: 1; transform: translateY(0); }
-        }
-        @keyframes bounceIn {
-          0% { opacity: 0; transform: scale(0.3); }
-          50% { transform: scale(1.05); }
-          100% { opacity: 1; transform: scale(1); }
-        }
-        .animate-slide-up {
-          animation: slideUp 0.6s ease-out;
-        }
-        .animate-bounce-in {
-          animation: bounceIn 0.5s ease-out;
-        }
-      `}</style>
+      
     </div>
+    
   );
 }

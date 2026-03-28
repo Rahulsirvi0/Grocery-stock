@@ -1,45 +1,54 @@
-import React from "react";
-import { useNavigate } from "react-router-dom";
-import { LogIn } from "lucide-react";
+import { Navigate } from "react-router-dom";
+import { useEffect, useState } from "react";
+import { supabase } from "../utils/supabase";
 
-interface Props {
+interface PrivateRouteProps {
   children: React.ReactNode;
 }
 
-const PrivateRoute = ({ children }: Props) => {
+export default function PrivateRoute({ children }: PrivateRouteProps) {
+  const [isAuthenticated, setIsAuthenticated] = useState<boolean | null>(null);
 
-  const user = localStorage.getItem("loggedUser");
-  const navigate = useNavigate();
+  useEffect(() => {
+    let mounted = true;
 
-  if (!user) {
+    const checkAuth = async () => {
+      try {
+        const { data: { session } } = await supabase.auth.getSession();
+        if (mounted) {
+          setIsAuthenticated(!!session);
+        }
+      } catch (error) {
+        console.error("Auth check error:", error);
+        if (mounted) {
+          setIsAuthenticated(false);
+        }
+      }
+    };
+
+    checkAuth();
+
+    // Listen for auth changes
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+      if (mounted) {
+        setIsAuthenticated(!!session);
+      }
+    });
+
+    return () => {
+      mounted = false;
+      subscription.unsubscribe();
+    };
+  }, []);
+
+  // Show loading spinner while checking auth
+  if (isAuthenticated === null) {
     return (
-      <div className="fixed inset-0 flex items-center justify-center bg-black/60 backdrop-blur-sm z-50">
-
-        <div className="bg-white/10 border border-white/20 backdrop-blur-xl rounded-2xl shadow-2xl p-8 w-[360px] text-center">
-
-          <h2 className="text-2xl font-bold text-white mb-3">
-            Please Login First
-          </h2>
-
-          <p className="text-white/70 mb-6">
-            You must login before accessing this section.
-          </p>
-
-          <button
-            onClick={() => navigate("/login")}
-            className="flex items-center justify-center gap-2 mx-auto px-5 py-3 rounded-xl bg-blue-500/20 hover:bg-blue-500/30 text-blue-200 border border-blue-400/50 transition-all"
-          >
-            <LogIn className="w-5 h-5"/>
-            Login
-          </button>
-
-        </div>
-
+      <div className="flex items-center justify-center min-h-screen">
+        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-white"></div>
       </div>
     );
   }
 
-  return <>{children}</>;
-};
-
-export default PrivateRoute;
+  return isAuthenticated ? <>{children}</> : <Navigate to="/login" replace />;
+}
