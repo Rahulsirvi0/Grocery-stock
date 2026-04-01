@@ -54,7 +54,7 @@ export async function signIn(email: string, password: string) {
         .from('users')
         .select('*')
         .eq('id', data.user.id)
-        .single()
+        .maybeSingle()
 
       if (profileError) throw profileError
 
@@ -93,7 +93,7 @@ export async function getCurrentUser() {
         .from('users')
         .select('*')
         .eq('id', user.id)
-        .single()
+        .maybeSingle()
 
       if (profileError) throw profileError
 

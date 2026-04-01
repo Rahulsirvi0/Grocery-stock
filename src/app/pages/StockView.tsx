@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Package, DollarSign, Trash2, Filter } from 'lucide-react';
+import { Package, DollarSign, Trash2, Filter, IndianRupee } from 'lucide-react';
 import { supabase } from '../utils/supabase';
 
 /**
@@ -256,7 +256,7 @@ export function StockView() {
                         </td>
                         <td className="px-6 py-4">
                           <div className="flex items-center gap-1 text-white font-semibold text-lg">
-                            <DollarSign className="w-5 h-5" />
+                            <IndianRupee className="w-5 h-5" />
                             {product.price.toFixed(2)}
                           </div>
                         </td>
@@ -300,7 +300,7 @@ export function StockView() {
                         <div>
                           <h3 className="text-white font-bold text-lg">{product.name}</h3>
                           <p className="text-white/60 text-sm flex items-center gap-1">
-                            <DollarSign className="w-4 h-4" />
+                            <IndianRupee className="w-4 h-4" />
                             {product.price.toFixed(2)}
                           </p>
                         </div>

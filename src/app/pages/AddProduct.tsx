@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Plus, DollarSign, Package, CheckCircle } from 'lucide-react';
+import { Plus, DollarSign, Package, CheckCircle, IndianRupee } from 'lucide-react';
 import { supabase } from '../utils/supabase';
 import { CATEGORIES } from "../constants/categories";
 
@@ -76,6 +76,8 @@ export function AddProduct() {
     const quantity = parseInt(formData.quantity);
     const price = parseFloat(formData.price);
 
+    const { data: { user } } = await supabase.auth.getUser();
+
     const { error } = await supabase
       .from("products")
       .insert([
@@ -83,7 +85,8 @@ export function AddProduct() {
           name: formData.name,
           quantity: quantity,
           price: price,
-          category: formData.category
+          category: formData.category,
+          user_id: user?.id
         }
       ]);
 
@@ -179,7 +182,7 @@ export function AddProduct() {
           {/* Price */}
           <div>
             <label className="flex items-center gap-2 text-white font-semibold mb-2 text-lg">
-              <DollarSign className="w-5 h-5" /> Price
+              <IndianRupee className="w-5 h-5" /> Price
             </label>
             <input
               type="number"

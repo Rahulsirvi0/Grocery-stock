@@ -31,9 +31,23 @@ export function UpdateStock() {
   }, []);
 
   const loadProducts = async () => {
+    const { data: authData, error: authError } = await supabase.auth.getUser();
+
+    if (authError) {
+      console.error("Error getting user:", authError.message)
+      return
+    }
+
+    const userId = authData.user?.id;
+    if (!userId) {
+      setProducts([]);
+      return;
+    }
+
     const { data, error } = await supabase
       .from("products")
       .select("*")
+      .eq("user_id", userId);
 
     if (error) {
       console.error("Error loading products:", error.message)
